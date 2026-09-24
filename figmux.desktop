@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Figma
+GenericName=Interface Design
+Comment=Figma with document tabs
+Exec=figmux %U
+Icon=figmux
+Terminal=false
+Categories=Graphics;2DGraphics;VectorGraphics;
+StartupWMClass=figmux
+StartupNotify=true
+Keywords=figma;design;figjam;
