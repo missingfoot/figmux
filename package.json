@@ -1,0 +1,40 @@
+{
+  "name": "figmux",
+  "productName": "Figma",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private Figma desktop wrapper for Linux with document tabs",
+  "main": "src/main.js",
+  "desktopName": "figmux.desktop",
+  "scripts": {
+    "postinstall": "node node_modules/electron/install.js",
+    "start": "electron .",
+    "dist": "electron-builder --linux dir",
+    "install-app": "./scripts/install.sh",
+    "update": "./scripts/update.sh"
+  },
+  "devDependencies": {
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.jamessparkes.figmux",
+    "executableName": "figmux",
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "linux": {
+      "target": "dir",
+      "icon": "assets/icon.png",
+      "category": "Graphics"
+    }
+  },
+  "allowScripts": {
+    "electron-winstaller": false
+  }
+}

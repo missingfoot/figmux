@@ -1,0 +1,181 @@
+:root {
+  --bg: #2c2c2c;
+  --tab-hover: #383838;
+  --tab-active: #444444;
+  --text: #b3b3b3;
+  --text-active: #ffffff;
+  --accent: #0d99ff;
+  --close-hover: #e5484d;
+  --divider: rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f0f0f0;
+    --tab-hover: #e3e3e3;
+    --tab-active: #ffffff;
+    --text: #5c5c5c;
+    --text-active: #1e1e1e;
+    --divider: rgba(0, 0, 0, 0.12);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font: 12px/1 "Inter", system-ui, sans-serif;
+  user-select: none;
+}
+
+body {
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: stretch;
+  padding: 0 6px 0 0;
+  gap: 1px;
+}
+
+#tabs {
+  -webkit-app-region: no-drag;
+  display: flex;
+  gap: 1px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  /* An explicit width (not just flex-basis) so the strip never sizes tabs by their title text. */
+  flex: 0 1 200px;
+  width: 200px;
+  min-width: 48px;
+  padding: 0 6px 0 8px;
+  overflow: hidden;
+  cursor: default;
+  transition: flex-basis 150ms ease-out, width 150ms ease-out, min-width 150ms ease-out, padding 150ms ease-out, opacity 150ms ease-out;
+}
+
+.tab.entering {
+  flex-basis: 0;
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  opacity: 0;
+}
+
+.tab:hover { background: var(--tab-hover); }
+.tab.active { background: var(--tab-active); color: var(--text-active); }
+
+.tab.home {
+  /* Matches the width of Figma's left toolbar rail so the two line up. */
+  flex: 0 0 55px;
+  width: 55px;
+  min-width: 0;
+  padding: 0;
+  justify-content: center;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  opacity: 0.8;
+}
+
+.spinner {
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid rgba(127, 127, 127, 0.35);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .tab { transition: none; }
+}
+
+button {
+  display: grid;
+  place-items: center;
+  -webkit-app-region: no-drag;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  border-radius: 4px;
+}
+
+.close {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  visibility: hidden;
+}
+
+.tab:hover .close, .tab.active .close { visibility: visible; }
+.close:hover { background: rgba(127, 127, 127, 0.25); }
+
+/* Styled as a square tab so it lines up with the strip. */
+#new-tab {
+  width: 38px;
+  flex: none;
+  border-radius: 0;
+}
+
+#new-tab:hover { background: var(--tab-hover); }
+
+#drag {
+  flex: 1;
+  min-width: 48px;
+}
+
+#controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 2px;
+}
+
+#controls button {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+}
+
+#controls button:hover { background: rgba(127, 127, 127, 0.25); }
+#close-window:hover { background: var(--close-hover) !important; color: #fff; }
+
+#maximize .restore, body.maximized #maximize .max { display: none; }
+body.maximized #maximize .restore { display: block; }
+
+/* Hairline between the tab bar and the page, drawn over the tabs so it runs the full width. */
+body::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--divider);
+  pointer-events: none;
+}
