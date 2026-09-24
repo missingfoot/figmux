@@ -56,19 +56,22 @@ body {
   flex: 0 1 200px;
   width: 200px;
   min-width: 48px;
-  padding: 0 6px 0 8px;
+  padding: 0 6px 0 4px;
   overflow: hidden;
   cursor: default;
   transition: flex-basis 150ms ease-out, width 150ms ease-out, min-width 150ms ease-out, padding 150ms ease-out, opacity 150ms ease-out;
 }
 
-.tab.entering {
+.tab.entering,
+.tab.leaving {
   flex-basis: 0;
   width: 0;
   min-width: 0;
   padding: 0;
   opacity: 0;
 }
+
+.tab.leaving { pointer-events: none; }
 
 .tab:hover { background: var(--tab-hover); }
 .tab.active { background: var(--tab-active); color: var(--text-active); }
@@ -93,8 +96,8 @@ body {
 .icon {
   display: grid;
   place-items: center;
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   flex: none;
   opacity: 0.8;
 }

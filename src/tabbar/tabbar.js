@@ -5,13 +5,6 @@ const svg = (inner, size = 16) =>
 
 const HOME_ICON = svg('<path d="M2.5 7.5 8 3l5.5 4.5V13h-4V9.5h-3V13h-4z"/>');
 const CLOSE_ICON = svg('<path d="M4 4l8 8M12 4l-8 8" stroke-width="1.3"/>', 12);
-const KIND_ICONS = {
-  design: svg('<path d="M5.5 2.5v11M10.5 2.5v11M2.5 5.5h11M2.5 10.5h11"/>'),
-  board: svg('<path d="M3 3h10v6.5L9.5 13H3z"/><path d="M13 9.5H9.5V13"/>'),
-  proto: svg('<path d="M5 3.5v9l7-4.5z"/>'),
-  slides: svg('<rect x="2.5" y="3.5" width="11" height="8" rx="1"/><path d="M6 14h4"/>'),
-  browser: svg('<rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="M2.5 6h11"/>'),
-};
 
 // Tab id -> its DOM, kept across renders so updates only touch what changed
 // (no flicker, hover state survives, CSS transitions can run).
@@ -26,7 +19,7 @@ function createTabEl(tab) {
     if (e.button === 0) window.figmux.activate(tab.id);
   });
   el.addEventListener('auxclick', (e) => {
-    if (e.button === 1) closeTab(tab.id);
+    if (e.button === 1) window.figmux.close(tab.id);
   });
 
   if (tab.home) {
@@ -46,7 +39,7 @@ function createTabEl(tab) {
   close.setAttribute('aria-label', 'Close tab');
   close.innerHTML = CLOSE_ICON;
   close.addEventListener('mousedown', (e) => e.stopPropagation());
-  close.addEventListener('click', () => closeTab(tab.id));
+  close.addEventListener('click', () => window.figmux.close(tab.id));
 
   el.append(icon, title, close);
   return { el, icon, title };
@@ -64,9 +57,16 @@ function updateTabEl(entry, tab, active) {
   // The spinner swaps into the icon slot, so loading never shifts the title.
   const iconKey = tab.loading ? 'loading' : tab.kind;
   if (entry.lastIcon !== iconKey) {
-    entry.icon.innerHTML = tab.loading ? '<span class="spinner"></span>' : KIND_ICONS[tab.kind] || KIND_ICONS.browser;
+    entry.icon.innerHTML = tab.loading ? '<span class="spinner"></span>' : FILE_ICONS[tab.kind] || HOME_ICON;
     entry.lastIcon = iconKey;
   }
+}
+
+// Closing tabs stay in the DOM while they animate out; ordering ignores them so they
+// shrink in place instead of being pushed past their neighbours.
+function skipLeaving(node) {
+  while (node && node.classList.contains('leaving')) node = node.nextSibling;
+  return node;
 }
 
 function render({ activeId, maximized, tabs }) {
@@ -75,8 +75,10 @@ function render({ activeId, maximized, tabs }) {
   const ids = new Set(tabs.map((t) => t.id));
   for (const [id, entry] of rendered) {
     if (!ids.has(id)) {
-      entry.el.remove();
+      // Shrink to nothing so the remaining tabs widen smoothly into the space.
       rendered.delete(id);
+      entry.el.classList.add('leaving');
+      setTimeout(() => entry.el.remove(), 200);
     }
   }
 
@@ -89,33 +91,23 @@ function render({ activeId, maximized, tabs }) {
       if (!firstRender) {
         // Grow in from zero width instead of popping in and shoving the neighbours.
         entry.el.classList.add('entering');
-        requestAnimationFrame(() => requestAnimationFrame(() => entry.el.classList.remove('entering')));
       }
     }
     updateTabEl(entry, tab, tab.id === activeId);
 
-    const expected = prev ? prev.nextSibling : tabsEl.firstChild;
+    const expected = skipLeaving(prev ? prev.nextSibling : tabsEl.firstChild);
     if (entry.el !== expected) tabsEl.insertBefore(entry.el, expected);
     prev = entry.el;
   }
   firstRender = false;
-}
 
-// Like Chrome: while closing tabs with the mouse, keep the remaining tabs at their current
-// width so the next close button lands under the cursor. Widths relax once the mouse leaves.
-function closeTab(id) {
-  for (const entry of rendered.values()) {
-    if (entry.title) entry.el.style.flex = `0 0 ${entry.el.getBoundingClientRect().width}px`;
+  // Lay out the new tabs at zero width, then release them so they transition open.
+  const entering = tabsEl.querySelectorAll('.entering');
+  if (entering.length) {
+    void tabsEl.offsetWidth;
+    for (const el of entering) el.classList.remove('entering');
   }
-  tabsEl.classList.add('frozen');
-  window.figmux.close(id);
 }
-
-tabsEl.addEventListener('mouseleave', () => {
-  if (!tabsEl.classList.contains('frozen')) return;
-  tabsEl.classList.remove('frozen');
-  for (const entry of rendered.values()) entry.el.style.removeProperty('flex');
-});
 
 window.figmux.onTabs(render);
 document.getElementById('new-tab').addEventListener('click', () => window.figmux.newTab());

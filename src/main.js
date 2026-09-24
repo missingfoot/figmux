@@ -57,7 +57,7 @@ function fileKeyOf(url) {
   return m ? m[2] : null;
 }
 
-const KINDS = { design: 'design', file: 'design', board: 'board', proto: 'proto', slides: 'slides', deck: 'slides' };
+const KINDS = { design: 'design', file: 'design', proto: 'design', board: 'board', slides: 'slides', deck: 'slides', make: 'make', buzz: 'buzz', site: 'site' };
 
 function kindOf(url) {
   const u = parseFigmaUrl(url);
