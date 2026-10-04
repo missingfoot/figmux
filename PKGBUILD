@@ -5,7 +5,7 @@
 # Updating: bump pkgver here together with "version" in package.json.
 
 pkgname=figmux
-pkgver=0.1.0
+pkgver=0.2.0
 pkgrel=1
 pkgdesc='Figma desktop wrapper for Linux with document tabs'
 arch=('any')

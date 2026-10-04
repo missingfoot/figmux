@@ -1,6 +1,7 @@
 const { app, BaseWindow, WebContentsView, Menu, ipcMain, session, shell } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
+const fontAgent = require('./font-agent');
 
 const HOME_URL = 'https://www.figma.com/files/recent';
 const TAB_BAR_HEIGHT = 38;
@@ -412,6 +413,9 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(() => {
     Menu.setApplicationMenu(null);
+    // Serves local fonts to figma.com (see font-agent.js).
+    fontAgent.start();
+    app.on('will-quit', fontAgent.stop);
 
     figmaSession = session.fromPartition('persist:figma');
     figmaSession.setUserAgent(CHROME_UA);
