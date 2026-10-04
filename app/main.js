@@ -30,7 +30,10 @@ const ALLOWED_PERMISSIONS = new Set([
   'keyboardLock',
   'notifications',
   'media',
-  'local-network-access', // lets figma.com reach the font agent on localhost
+  // Lets figma.com reach the font agent on 127.0.0.1. Chromium split this out of
+  // 'local-network-access' into its own 'loopback-network' permission.
+  'local-network-access',
+  'loopback-network',
 ]);
 
 // Tweaks to Figma's own UI where it duplicates what figmux provides.
@@ -419,10 +422,14 @@ if (!app.requestSingleInstanceLock()) {
 
     figmaSession = session.fromPartition('persist:figma');
     figmaSession.setUserAgent(CHROME_UA);
-    figmaSession.setPermissionRequestHandler((_wc, permission, callback) => {
-      callback(ALLOWED_PERMISSIONS.has(permission));
-    });
-    figmaSession.setPermissionCheckHandler((_wc, permission) => ALLOWED_PERMISSIONS.has(permission));
+    // FIGMUX_DEBUG=1 logs permission decisions, e.g. to spot a renamed permission being denied.
+    const allowed = (permission, kind) => {
+      const ok = ALLOWED_PERMISSIONS.has(permission);
+      if (process.env.FIGMUX_DEBUG) console.log(`figmux permission ${kind}: ${permission} -> ${ok ? 'allowed' : 'denied'}`);
+      return ok;
+    };
+    figmaSession.setPermissionRequestHandler((_wc, permission, callback) => callback(allowed(permission, 'request')));
+    figmaSession.setPermissionCheckHandler((_wc, permission) => allowed(permission, 'check'));
 
     createWindow();
   });

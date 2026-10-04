@@ -32,6 +32,8 @@ const CONTENT_TYPES = { '.ttf': 'font/ttf', '.otf': 'font/otf', '.ttc': 'font/co
 const FALLBACK_FONT_DIRS = ['/usr/share/fonts', '/usr/local/share/fonts', path.join(os.homedir(), '.local/share/fonts'), path.join(os.homedir(), '.fonts')];
 
 const log = (...args) => console.log('figmux font agent:', ...args);
+// FIGMUX_DEBUG=1 logs every request, for troubleshooting Figma not seeing fonts.
+const debug = process.env.FIGMUX_DEBUG ? log : () => {};
 
 // ---------------------------------------------------------------------------
 // Finding font files
@@ -440,6 +442,7 @@ let server = null;
 function start() {
   if (server) return;
   server = http.createServer((req, res) => {
+    res.on('finish', () => debug(`${req.method} ${req.url.slice(0, 120)} host=${req.headers.host} origin=${req.headers.origin} -> ${res.statusCode}`));
     handle(req, res).catch((err) => {
       console.error('figmux font agent: request failed', err);
       if (!res.headersSent) send(res, 500, 'Internal Server Error');

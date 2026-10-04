@@ -1,7 +1,7 @@
 {
   "name": "figmux",
   "productName": "Figma",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Private Figma desktop wrapper for Linux with document tabs",
   "main": "app/main.js",
